@@ -3,45 +3,33 @@ from rest_framework.response import Response
 import requests
 from hashlib import sha1
 import hmac
-import base64
+from .funciones_bodega import *
 
 
-api_key = 'A#soL%kRvHX2qHm'
-api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
-
-def sign_request(string):
-
-    # key = b"CONSUMER_SECRET&" #If you dont have a token yet
-    key = str.encode(api_key)
-    # The Base String as specified here:
-    raw = str.encode(string) # as specified by OAuth
-
-    hashed = hmac.new(key, raw, digestmod=sha1)
-
-    hashed_bytes = hashed.digest()
-    # The signature
-    encoded = base64.b64encode(hashed_bytes)
-    encoded = str(encoded, 'UTF-8')
-    print(encoded)
-    return encoded
-
-
-headers = {'Content-Type': 'application/json',
-           'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request('GET'))}
-
-
-# Tutorial sacado de:
-# http://polyglot.ninja/django-rest-framework-getting-started/
+name_sku_dict = {"Sesamo": "1011",
+                "Nori_Entero": "1016",
+                "Camaron": "1006",
+                "Azucar": "1003",
+                "Arroz_Grano_Corto": "1001"}
 
 class InventoriesView(APIView):
     def get(self, request):
         #ESTA ES LA FUNCIÓN QUE HAY QUE MODIFICAR PARA LOS GET
         #SOLO SE MUESTRAN PRODUCTOS DE ALMACEN DESPACHO, ALMACENES GENERALES Y PULMON
+        print("prueba")
+        stock_recepcion = ObtenerSkuconStock(almacen_id_dict['recepcion'])
+        stock_almacen_1 = ObtenerSkuconStock(almacen_id_dict['almacen_1'])
+        stock_almacen_2 = ObtenerSkuconStock(almacen_id_dict['almacen_2'])
+        stock_pulmon = ObtenerSkuconStock(almacen_id_dict['pulmon'])
 
-        result = requests.get('{}almacenes/'.format(api_url_base), headers=headers).json()
+        print("prueba2")
+        dict = update_dictionary_stocks({}, stock_recepcion)
+        dict = update_dictionary_stocks(dict, stock_almacen_1)
+        dict = update_dictionary_stocks(dict, stock_almacen_2)
+        dict = update_dictionary_stocks(dict, stock_pulmon)
 
-
-        return Response({"message": "Hello World!"})
+        print("prueba3")
+        return Response(json.dumps(dict))
 
 
 # Cuando hagan post con POSTMAN hay que ponerle un / al final de la URL, así:

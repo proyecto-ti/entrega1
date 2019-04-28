@@ -6,6 +6,6 @@ from .views import InventoriesView, OrdersView
 
 # app_name will help us do a reverse look-up latter.
 urlpatterns = [
-    path('inventario/', InventoriesView.as_view()),
+    path('inventories/', InventoriesView.as_view()),
     path('orders/', OrdersView.as_view()),
 ]
