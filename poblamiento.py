@@ -13,6 +13,7 @@ class Producto:
 		self.productores = []
 		self.stock_minimo = None
 		self.propio = False # si nuestro grupo lo produce
+		self.receta = {}
 
 
 loc = ("Productos.xlsx")
@@ -25,7 +26,7 @@ sheet_stock = wb.sheet_by_index(4)
 
 lista_productos = []
 
-for fila in range(1,78):
+for fila in range(1,79):
 	sku = int(sheet_productos.cell_value(fila, 0))
 	nombre = str(sheet_productos.cell_value(fila, 1))
 	precio = (sheet_productos.cell_value(fila, 3))
@@ -45,14 +46,35 @@ for fila in range(1,78):
 	lista_productos.append(a)
 
 
-for fila in range(1,23):
+for fila in range(1,24):
 	sku = int(sheet_stock.cell_value(fila, 0))
 	for element in lista_productos:
 		if element.sku == sku :
 			element.stock_minimo = int(sheet_stock.cell_value(fila, 3))
 
-for element in lista_productos:
-	print(element.stock_minimo)
+lista_ingredientes = []
+for fila in range(1,192):
+	sku1 = int(sheet_ingredientes.cell_value(fila, 0))
+	sku2 = int(sheet_ingredientes.cell_value(fila, 2))
+	valor = int(sheet_ingredientes.cell_value(fila, 9))
+	lista =[sku1,sku2,valor]
+	lista_ingredientes.append(lista)
+
+for element in lista_ingredientes:
+	for elemento in lista_productos:
+		if elemento.sku == element[0]:
+			elemento.receta[element[1]] = element[2]
+
+for element in lista_productos:	
+	print(element.receta)
+
+
+
+
+
+
+
+
 
 
 
