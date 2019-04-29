@@ -27,6 +27,7 @@ sku_stock_dict = {  "1301" : 50, "1201" : 250, "1209" : 20, "1109" : 50,"1309" :
                     "1210" : 150,"1112" : 130,"1108" : 10,"1407" : 40,"1207" : 20,
                     "1107" : 50,"1307" : 170,"1211" : 60}
 
+
 def sign_request(string):
 
     # key = b"CONSUMER_SECRET&" #If you dont have a token yet
@@ -42,6 +43,7 @@ def sign_request(string):
     encoded = str(encoded, 'UTF-8')
     return encoded
 
+
 def ObtenerSkuconStock(almacenId):
     message = 'GET' + almacenId
     headers = {'Content-Type': 'application/json',
@@ -49,6 +51,7 @@ def ObtenerSkuconStock(almacenId):
     url = '{}skusWithStock?almacenId={}'.format(api_url_base, almacenId)
     result = requests.get(url, headers=headers).json()
     return result
+
 
 def revisarBodega():
     url = '{}almacenes/'.format(api_url_base)
@@ -59,18 +62,21 @@ def revisarBodega():
     result = requests.get(url, headers=headers).json()
     return result
 
+
+
 def fabricarSinPago(sku, cantidad):
     message = 'PUT' + sku + str(cantidad)
     url = '{}fabrica/fabricarSinPago'.format(api_url_base)
-    headers_ = {'Content-Type': 'application/json',
+    headers = {'Content-Type': 'application/json',
                'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
     body = {"sku": sku, "cantidad": int(cantidad)}
 
-    result = requests.put(url, headers=headers_ , data=json.dumps(body))
+    result = requests.put(url, headers=headers, data=json.dumps(body))
     if result.status_code == 200:
         return result
     else:
         return result
+
 
 def update_dictionary_stocks(dictionary, stock_type):
     for sku in stock_type:
@@ -87,6 +93,7 @@ def obtener_productos_almacen(almacenId, sku):
     url = '{}stock?almacenId={}&sku={}'.format(api_url_base, almacenId, sku)
     result = requests.get(url, headers=headers).json()
     return result
+
 
 def obtener_id_producto(sku, cantidad, almacenId):
     #lista de almacenes con el producto
@@ -115,6 +122,18 @@ def mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino):
         body = {"productoId": productoId, "almacenId": almacenId_destino}
 
         requests.post(url, headers=headers_, data=json.dumps(body))
+
+
+def mover_entre_bodegas(sku, cantidad, almacenId_origen, almacenId_destino, precio=0, oc=''):
+    lista_id = obtener_id_producto(sku, cantidad, almacenId_origen)
+    for productoId in lista_id:
+        message = 'POST' + productoId + almacenId_destino
+        url = '{}moveStock'.format(api_url_base)
+        headers_ = {'Content-Type': 'application/json',
+                    'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+        body = {"productoId": productoId, "almacenId": almacenId_destino}
+        requests.post(url, headers=headers_, data=json.dumps(body))
+
 
 def pedir_productos_sku(sku, cantidad):
     productos = excel_final() #lista de los productos
@@ -157,12 +176,14 @@ def post_orders_grupox(grupo, cantidad, sku):
     body = {'sku': sku, 'cantidad': cantidad, 'almacenId': almacen_id_dict['recepcion']}
     result = requests.post(url, headers=headers_, data=json.dumps(body))
     return result
+"""
 try:
     #print(get_inventories_grupox(2).json())
     print(pedir_productos_sku('1001', 1))
     #print(get_inventories_grupox(2).json())
 except:
     print("dias")
+"""
 
 
 def liberar_recepcion():
@@ -187,7 +208,6 @@ def liberar_recepcion():
                 #traspasa todos esos productos a almacen2
                 mover_entre_almacenes(producto['_id'], producto['total'], "5cbd3ce444f67600049431b9", "5cbd3ce444f67600049431bc")
     return
-
 
 def despachar_producto(sku, cantidad):
     #cantidad que se ha envidado a despacho
