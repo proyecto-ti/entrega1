@@ -88,7 +88,6 @@ def obtener_productos_almacen(almacenId, sku):
     result = requests.get(url, headers=headers).json()
     return result
 
-print(obtener_productos_almacen('5cbd3ce444f67600049431b9', '1006'))
 
 
 def obtener_id_producto(sku, cantidad, almacenId):
@@ -96,7 +95,6 @@ def obtener_id_producto(sku, cantidad, almacenId):
     cantidad_id = 0
     lista_id_productos = []
     lista_productos = ObtenerSkuconStock(almacenId)
-    print(lista_productos)
     for producto in lista_productos:
         if producto['_id'] == sku:
             lista_productos_almacen = obtener_productos_almacen(almacenId, sku)
@@ -109,7 +107,6 @@ def obtener_id_producto(sku, cantidad, almacenId):
     # en caso de que la cantidad sea mayor que lo que se tiene, igual se entrega la lista con todos los existentes
     return lista_id_productos
 
-print(obtener_id_producto('1006', 10, '5cbd3ce444f67600049431b9'))
 
 
 def mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino):
@@ -134,7 +131,4 @@ def mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino):
 
         requests.post(url, headers=headers_, data=json.dumps(body))
 
-print(len(obtener_productos_almacen('5cbd3ce444f67600049431ba', '1006')))
-print(mover_entre_almacenes('1006', 5, '5cbd3ce444f67600049431b9', '5cbd3ce444f67600049431ba'))
-print(len(obtener_productos_almacen('5cbd3ce444f67600049431ba', '1006')))
 
