@@ -26,6 +26,7 @@ sku_stock_dict = {  "1301" : 50, "1201" : 250, "1209" : 20, "1109" : 50,"1309" :
                     "1210" : 150,"1112" : 130,"1108" : 10,"1407" : 40,"1207" : 20,
                     "1107" : 50,"1307" : 170,"1211" : 60}
 
+
 def sign_request(string):
 
     # key = b"CONSUMER_SECRET&" #If you dont have a token yet
@@ -41,6 +42,7 @@ def sign_request(string):
     encoded = str(encoded, 'UTF-8')
     return encoded
 
+
 def ObtenerSkuconStock(almacenId):
     message = 'GET' + almacenId
     headers = {'Content-Type': 'application/json',
@@ -48,6 +50,7 @@ def ObtenerSkuconStock(almacenId):
     url = '{}skusWithStock?almacenId={}'.format(api_url_base, almacenId)
     result = requests.get(url, headers=headers).json()
     return result
+
 
 def revisarBodega():
     url = '{}almacenes/'.format(api_url_base)
@@ -58,18 +61,22 @@ def revisarBodega():
     result = requests.get(url, headers=headers).json()
     return result
 
+print(revisarBodega())
+
+
 def fabricarSinPago(sku, cantidad):
     message = 'PUT' + sku + str(cantidad)
     url = '{}fabrica/fabricarSinPago'.format(api_url_base)
-    headers_ = {'Content-Type': 'application/json',
+    headers = {'Content-Type': 'application/json',
                'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
     body = {"sku": sku, "cantidad": int(cantidad)}
 
-    result = requests.put(url, headers=headers_ , data=json.dumps(body))
+    result = requests.put(url, headers=headers, data=json.dumps(body))
     if result.status_code == 200:
         return result
     else:
         return result
+
 
 def update_dictionary_stocks(dictionary, stock_type):
     for sku in stock_type:
@@ -87,7 +94,6 @@ def obtener_productos_almacen(almacenId, sku):
     url = '{}stock?almacenId={}&sku={}'.format(api_url_base, almacenId, sku)
     result = requests.get(url, headers=headers).json()
     return result
-
 
 
 def obtener_id_producto(sku, cantidad, almacenId):
@@ -108,18 +114,6 @@ def obtener_id_producto(sku, cantidad, almacenId):
     return lista_id_productos
 
 
-
-def mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino):
-    lista_id = obtener_id_producto(sku, cantidad, almacenId_origen)
-    for productoId in lista_id:
-        message = 'POST' + productoId + almacenId_destino
-        url = '{}moveStock'.format(api_url_base)
-        headers_ = {'Content-Type': 'application/json',
-                    'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
-        body = {"productoId": productoId, "almacenId": almacenId_destino}
-
-        requests.post(url, headers=headers_, data=json.dumps(body))
-
 def mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino):
     lista_id = obtener_id_producto(sku, cantidad, almacenId_origen)
     for productoId in lista_id:
@@ -132,3 +126,74 @@ def mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino):
         requests.post(url, headers=headers_, data=json.dumps(body))
 
 
+def mover_entre_bodegas(sku, cantidad, almacenId_origen, almacenId_destino, precio=0, oc=''):
+    lista_id = obtener_id_producto(sku, cantidad, almacenId_origen)
+    for productoId in lista_id:
+        message = 'POST' + productoId + almacenId_destino
+        url = '{}moveStock'.format(api_url_base)
+        headers_ = {'Content-Type': 'application/json',
+                    'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+        body = {"productoId": productoId, "almacenId": almacenId_destino}
+        requests.post(url, headers=headers_, data=json.dumps(body))
+
+
+def liberar_recepcion():
+    #funcion que deja recepcion vacia, se mandan productos a almcanen1 o almacen2
+    datos_bodegas = revisarBodega()
+    #espacio en recepcion
+    espacio_usado = datos_bodegas[0]['usedSpace']
+    if espacio_usado == 0:
+        #recepcion ya esta vacia
+        print('recepcion vacia')
+        return
+    else:
+        lista_recepcion = ObtenerSkuconStock("5cbd3ce444f67600049431b9")
+        print(lista_recepcion)
+        for producto in lista_recepcion:
+            #se actualizan datos de bodega
+            datos_bodegas = revisarBodega()
+            #revisa si cabe en almacen1
+            if producto['total'] <= datos_bodegas[2]['totalSpace'] - datos_bodegas[2]['usedSpace']:
+                #traspasa todos esos productos a almacen1
+                mover_entre_almacenes(producto['_id'], producto['total'], "5cbd3ce444f67600049431b9", "5cbd3ce444f67600049431bb")
+            #revisa si cabe en almacen2
+            elif producto['total'] <= datos_bodegas[3]['totalSpace'] - datos_bodegas[3]['usedSpace']:
+                #traspasa todos esos productos a almacen2
+                mover_entre_almacenes(producto['_id'], producto['total'], "5cbd3ce444f67600049431b9", "5cbd3ce444f67600049431bc")
+    print(revisarBodega()[0])
+    return
+
+
+# FUNCION NO PROBADA TODAVIA
+def despachar_producto(sku, cantidad):
+    #cantidad que se ha envidado a despacho
+    datos_bodegas = revisarBodega()
+    capacidad_despacho = datos_bodegas[1]['totalSpace'] - datos_bodegas[1]['usedSpace']
+    if capacidad_despacho >= cantidad:
+        cantidad_despachar = cantidad
+    else:
+        cantidad_despachar = capacidad_despacho
+    #revisa si producto esta en almacen1
+    lista_almacen1 = ObtenerSkuconStock("5cbd3ce444f67600049431bb")
+    for producto in lista_almacen1:
+        if producto['id'] == sku:
+            if producto['total'] >= cantidad_despachar:
+                #se tiene la cantidad que se necesita
+                mover_entre_almacenes(sku, cantidad_despachar, "5cbd3ce444f67600049431bb", "5cbd3ce444f67600049431ba")
+                return
+            elif producto['total'] < cantidad_despachar:
+                #no se tiene la cantidad que se necesita, se manda lo que se tiene
+                mover_entre_almacenes(sku, producto['total'], "5cbd3ce444f67600049431bb", "5cbd3ce444f67600049431ba")
+            break
+    lista_almacen2 = ObtenerSkuconStock("5cbd3ce444f67600049431bc")
+    for producto in lista_almacen2:
+        if producto['id'] == sku:
+            if producto['total'] >= cantidad_despachar:
+                # se tiene la cantidad que se necesita
+                mover_entre_almacenes(sku, cantidad_despachar, "5cbd3ce444f67600049431bc", "5cbd3ce444f67600049431ba")
+                return
+            elif producto['total'] < cantidad_despachar:
+                # no se tiene la cantidad que se necesita, se manda lo que se tiene
+                mover_entre_almacenes(sku, producto['total'], "5cbd3ce444f67600049431bc", "5cbd3ce444f67600049431ba")
+            break
+    return
