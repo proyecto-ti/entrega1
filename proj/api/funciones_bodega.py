@@ -3,8 +3,7 @@ from hashlib import sha1
 import hmac
 import base64
 import json
-from .poblamiento import excel_final
-
+from .datos import *
 api_key = 'A#soL%kRvHX2qHm'
 api_url_base = 'https://integracion-2019-dev.herokuapp.com/bodega/'
 
@@ -81,10 +80,28 @@ def fabricarSinPago(sku, cantidad):
 def update_dictionary_stocks(dictionary, stock_type):
     for sku in stock_type:
         if not sku["_id"] in dictionary:
-            dictionary.update({ sku["_id"] : sku["total"] })
+            dictionary.update({sku["_id"] : sku["total"] })
         else:
             dictionary[sku["_id"]] += sku["total"]
     return dictionary
+
+def stock():
+    stock_recepcion = ObtenerSkuconStock(almacen_id_dict['recepcion'])
+    stock_almacen_1 = ObtenerSkuconStock(almacen_id_dict['almacen_1'])
+    stock_almacen_2 = ObtenerSkuconStock(almacen_id_dict['almacen_2'])
+    stock_pulmon = ObtenerSkuconStock(almacen_id_dict['pulmon'])
+
+    dict = update_dictionary_stocks({}, stock_recepcion)
+    dict = update_dictionary_stocks(dict, stock_almacen_1)
+    dict = update_dictionary_stocks(dict, stock_almacen_2)
+    dict = update_dictionary_stocks(dict, stock_pulmon)
+
+    datos = productos()
+    lista = []
+    for sku,total in dict.items():
+        print(sku, total)
+        lista.append({"sku": str(sku), "nombre": str(datos[sku]["nombre"]), "total": total})
+    return lista
 
 def obtener_productos_almacen(almacenId, sku):
     message = 'GET' + almacenId + sku
