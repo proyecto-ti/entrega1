@@ -15,7 +15,6 @@ class InventoriesView(APIView):
     def get(self, request):
         #ESTA ES LA FUNCIÓN QUE HAY QUE MODIFICAR PARA LOS GET
         #SOLO SE MUESTRAN PRODUCTOS DE ALMACEN DESPACHO, ALMACENES GENERALES Y PULMON
-        print(poblamiento.lista_productos)
         stock_recepcion = ObtenerSkuconStock(almacen_id_dict['recepcion'])
         stock_almacen_1 = ObtenerSkuconStock(almacen_id_dict['almacen_1'])
         stock_almacen_2 = ObtenerSkuconStock(almacen_id_dict['almacen_2'])
