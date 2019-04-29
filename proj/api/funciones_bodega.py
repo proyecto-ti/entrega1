@@ -27,10 +27,16 @@ sku_stock_dict = {  "1301" : 50, "1201" : 250, "1209" : 20, "1109" : 50,"1309" :
                     "1107" : 50,"1307" : 170,"1211" : 60}
 
 def sign_request(string):
+
+    # key = b"CONSUMER_SECRET&" #If you dont have a token yet
     key = str.encode(api_key)
-    raw = str.encode(string)
+    # The Base String as specified here:
+    raw = str.encode(string) # as specified by OAuth
+
     hashed = hmac.new(key, raw, digestmod=sha1)
+
     hashed_bytes = hashed.digest()
+    # The signature
     encoded = base64.b64encode(hashed_bytes)
     encoded = str(encoded, 'UTF-8')
     return encoded
@@ -72,3 +78,63 @@ def update_dictionary_stocks(dictionary, stock_type):
         else:
             dictionary[sku["_id"]] += sku["total"]
     return dictionary
+
+
+def obtener_productos_almacen(almacenId, sku):
+    message = 'GET' + almacenId + sku
+    headers = {'Content-Type': 'application/json',
+               'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+    url = '{}stock?almacenId={}&sku={}'.format(api_url_base, almacenId, sku)
+    result = requests.get(url, headers=headers).json()
+    return result
+
+print(obtener_productos_almacen('5cbd3ce444f67600049431b9', '1006'))
+
+
+def obtener_id_producto(sku, cantidad, almacenId):
+    #lista de almacenes con el producto
+    cantidad_id = 0
+    lista_id_productos = []
+    lista_productos = ObtenerSkuconStock(almacenId)
+    print(lista_productos)
+    for producto in lista_productos:
+        if producto['_id'] == sku:
+            lista_productos_almacen = obtener_productos_almacen(almacenId, sku)
+            print(lista_productos_almacen)
+            for producto_unitario in lista_productos_almacen:
+                lista_id_productos.append(producto_unitario['_id'])
+                cantidad_id += 1
+                if cantidad_id == cantidad:
+                    return lista_id_productos
+    # en caso de que la cantidad sea mayor que lo que se tiene, igual se entrega la lista con todos los existentes
+    return lista_id_productos
+
+print(obtener_id_producto('1006', 10, '5cbd3ce444f67600049431b9'))
+
+
+def mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino):
+    lista_id = obtener_id_producto(sku, cantidad, almacenId_origen)
+    for productoId in lista_id:
+        message = 'POST' + productoId + almacenId_destino
+        url = '{}moveStock'.format(api_url_base)
+        headers_ = {'Content-Type': 'application/json',
+                    'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+        body = {"productoId": productoId, "almacenId": almacenId_destino}
+
+        requests.post(url, headers=headers_, data=json.dumps(body))
+
+def mover_entre_almacenes(sku, cantidad, almacenId_origen, almacenId_destino):
+    lista_id = obtener_id_producto(sku, cantidad, almacenId_origen)
+    for productoId in lista_id:
+        message = 'POST' + productoId + almacenId_destino
+        url = '{}moveStock'.format(api_url_base)
+        headers_ = {'Content-Type': 'application/json',
+                    'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+        body = {"productoId": productoId, "almacenId": almacenId_destino}
+
+        requests.post(url, headers=headers_, data=json.dumps(body))
+
+print(len(obtener_productos_almacen('5cbd3ce444f67600049431ba', '1006')))
+print(mover_entre_almacenes('1006', 5, '5cbd3ce444f67600049431b9', '5cbd3ce444f67600049431ba'))
+print(len(obtener_productos_almacen('5cbd3ce444f67600049431ba', '1006')))
+
