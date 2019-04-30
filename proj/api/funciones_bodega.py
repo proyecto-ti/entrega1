@@ -134,7 +134,8 @@ def mover_entre_bodegas(sku, cantidad, almacenId_origen, almacenId_destino, prec
         headers_ = {'Content-Type': 'application/json',
                     'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
         body = {"productoId": productoId, "almacenId": almacenId_destino}
-        requests.post(url, headers=headers_, data=json.dumps(body))
+        respuesta = requests.post(url, headers=headers_, data=json.dumps(body))
+        return respuesta
 
 
 def liberar_recepcion():
