@@ -8,7 +8,7 @@ def pedir_stock_minimo_grupos():
     pedir = generar_dict_compras()
     liberar_recepcion()
     for sku, cantidad in pedir.items():
-        pedir_productos_sku(sku, 1)
+        pedir_productos_sku(sku, cantidad)
         liberar_recepcion()
 
 @task
