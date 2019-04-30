@@ -23,13 +23,13 @@ class InventoriesView(APIView):
         stock_pulmon = ObtenerSkuconStock(almacen_id_dict['pulmon'])
 
         print("prueba2")
-        dict = update_dictionary_stocks({}, stock_recepcion)
-        dict = update_dictionary_stocks(dict, stock_almacen_1)
-        dict = update_dictionary_stocks(dict, stock_almacen_2)
-        dict = update_dictionary_stocks(dict, stock_pulmon)
+        dictionary = update_dictionary_stocks({}, stock_recepcion)
+        dictionary = update_dictionary_stocks(dictionary, stock_almacen_1)
+        dictionary = update_dictionary_stocks(dictionary, stock_almacen_2)
+        dictionary = update_dictionary_stocks(dictionary, stock_pulmon)
 
         print("prueba3")
-        return Response(json.dumps(dict))
+        return Response(json.dumps(dictionary))
 
 
 # Cuando hagan post con POSTMAN hay que ponerle un / al final de la URL, así:
@@ -48,8 +48,8 @@ class OrdersView(APIView):
             despachar_producto(sku, cantidad)
             envio = mover_entre_bodegas(sku, cantidad, almacen_id_dict["recepcion"], almacenId, precio=0, oc='')
             if envio.status_code == 200:
-                dict = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2", "aceptado": True, "despachado": True}
-                return Response(json.dumps(dict))
+                dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2", "aceptado": True, "despachado": True}
+                return Response(json.dumps(dictionary))
             else
                 return Response(data="error de nuestro grupo. Oops!", status.HTTP_400_BAD_REQUEST)
         else:
