@@ -138,9 +138,9 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
-    'probando': {
-        'task': 'api.tasks.probando',
-        'schedule': 5,
-
+    'get_inventories_grupoxx': {
+        'task': 'api.tasks.get_inventories_grupoxx',
+        'schedule': 10,
     }
+
 }

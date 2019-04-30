@@ -4,7 +4,7 @@ import requests
 from hashlib import sha1
 import hmac
 from .funciones_bodega import *
-
+from .datos import *
 
 name_sku_dict = {"Sesamo": "1011",
                 "Nori_Entero": "1016",
@@ -16,20 +16,10 @@ class InventoriesView(APIView):
     def get(self, request):
         #ESTA ES LA FUNCIÓN QUE HAY QUE MODIFICAR PARA LOS GET
         #SOLO SE MUESTRAN PRODUCTOS DE ALMACEN DESPACHO, ALMACENES GENERALES Y PULMON
-        print("prueba")
-        stock_recepcion = ObtenerSkuconStock(almacen_id_dict['recepcion'])
-        stock_almacen_1 = ObtenerSkuconStock(almacen_id_dict['almacen_1'])
-        stock_almacen_2 = ObtenerSkuconStock(almacen_id_dict['almacen_2'])
-        stock_pulmon = ObtenerSkuconStock(almacen_id_dict['pulmon'])
 
-        print("prueba2")
-        dictionary = update_dictionary_stocks({}, stock_recepcion)
-        dictionary = update_dictionary_stocks(dictionary, stock_almacen_1)
-        dictionary = update_dictionary_stocks(dictionary, stock_almacen_2)
-        dictionary = update_dictionary_stocks(dictionary, stock_pulmon)
+        lista = stock()
+        return Response(json.dumps(lista,  sort_keys=True, ensure_ascii=False))
 
-        print("prueba3")
-        return Response(json.dumps(dictionary))
 
 
 # Cuando hagan post con POSTMAN hay que ponerle un / al final de la URL, así:
