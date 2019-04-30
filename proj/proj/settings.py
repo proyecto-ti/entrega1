@@ -138,9 +138,12 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
-    'get_inventories_grupoxx': {
-        'task': 'api.tasks.get_inventories_grupoxx',
-        'schedule': 10,
+    'pedir_stock_minimo_grupos': {
+        'task': 'api.tasks.pedir_stock_minimo_grupos',
+        'schedule': 60*3,
+    },
+    'crear_productos': {
+        'task': 'api.tasks.crear_productos',
+        'schedule': 30,
     }
-
 }
