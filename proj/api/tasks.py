@@ -5,10 +5,10 @@ from .funciones_bodega import *
 
 @task
 def pedir_stock_minimo_grupos():
-    pedir = restar_stock_actual()
+    pedir = generar_dict_compras()
     liberar_recepcion()
     for sku, cantidad in pedir.items():
-        pedir_productos_sku(sku, 1)
+        pedir_productos_sku(sku, cantidad)
         liberar_recepcion()
 
 @task
