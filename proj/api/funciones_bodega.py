@@ -257,8 +257,6 @@ def despachar_producto(sku, cantidad):
 
 
 #######FUNCION PARA EL STOCK MINIMO CUANTO TENGO QUE PEDIR DE CADA ELEMENTO
-def cantidad_producto(sku):
-    return 0
 
 def calcular_stock_unidades(diccionario):
     dict_compras_cantidad = dict()
@@ -297,7 +295,7 @@ def calcular_cantidad_comprar(dict_producto, dict_comprar, dict_compra_final = {
     return dict_compra_final
 
 
-def restar_stock_actual():
+def generar_dict_compras():
     datos_productos = productos()
     calcular_stock_unidades_ = calcular_stock_unidades(datos_productos)
     dict_compra_final = calcular_cantidad_comprar(datos_productos, calcular_stock_unidades_)
@@ -305,13 +303,13 @@ def restar_stock_actual():
     for materias_primas in stock_actual:
         sku = materias_primas['sku']
         if sku in dict_compra_final:
-            dict_compra_final[sku] -= materias_primas['total']
+            if dict_compra_final[sku] > materias_primas['total']
+                dict_compra_final[sku] -= materias_primas['total']
 
     return dict_compra_final
 
 ########
 
-print(restar_stock_actual())
 
 def pedir_productos_sku(sku, cantidad):
     datos = productos()
@@ -334,7 +332,8 @@ def pedir_productos_sku(sku, cantidad):
             except:
                 return "FAIL"
     else:
-        return "FAIL"
+        cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])
+        fabricarSinPago(sku, cantidad)
 
 def get_inventories_grupox(grupo):
     url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/inventories/'
@@ -360,7 +359,7 @@ def post_orders_grupox(grupo, cantidad, sku):
 def enviar_fabricar():
     datos = productos()
     for element in sku_stock_dict: # recorro elementos con stock minimo
-        quantity = cantidad_producto(element) # calculo cantidad del elemento en inventario
+        quantity = oducto(element) # calculo cantidad del elemento en inventario
         if sku_stock_dict[element] > quantity: # si tengo menos productos que el stock minimo
             resta = sku_stock_dict[element] - quantity #calculo cuanto es lo que me falta
             lote = datos[element]["lote"]  #valor lote
@@ -376,7 +375,7 @@ def enviar_fabricar():
                 se_puede_pedir = True
                 for elemento in datos[element]["receta"]:
                     unitario = datos[element]["receta"][elemento]
-                    if cantidad_producto(element) < unitario:
+                    if oducto(element) < unitario:
                         se_puede_pedir = False
 
                 if se_puede_pedir == True:
