@@ -144,6 +144,6 @@ CELERY_BEAT_SCHEDULE = {
     },
     'crear_productos': {
         'task': 'api.tasks.crear_productos',
-        'schedule': 60*60,
+        'schedule': 60*10,
     }
 }
