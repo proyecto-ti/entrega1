@@ -352,7 +352,7 @@ def pedir_productos_sku(sku, cantidad):
                 pass
     else:
         cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])
-        print(fabricarSinPago(sku, cantidad))
+        #print(fabricarSinPago(sku, cantidad))
 
 def get_inventories_grupox(grupo):
     url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/inventories/'
