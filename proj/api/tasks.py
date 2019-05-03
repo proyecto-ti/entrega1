@@ -9,7 +9,7 @@ def pedir_stock_minimo_grupos():
     liberar_recepcion()
     for sku, cantidad in pedir.items():
         pedir_productos_sku(sku, 3)
-        pedir_productos_sku(sku, 3, url_change=True)
+        pedir_productos_sku(sku, 3, url_changed=True)
         liberar_recepcion()
 
 @task
