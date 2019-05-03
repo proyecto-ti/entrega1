@@ -282,6 +282,7 @@ def calcular_stock_unidades(stock_actual, diccionario):
                 dict_compras_cantidad[sku] = cantidad_pedir
     return dict_compras_cantidad
 
+
 def calcular_cantidad_comprar(dict_producto, dict_comprar, dict_compra_final = {}):
 
     for sku, cantidad in dict_comprar.items():
@@ -340,9 +341,9 @@ def pedir_productos_sku(sku, cantidad):
                     for resultados in result.json():
                         if resultados['sku'] == sku:
                             #print("ok")
-                            cantidad_grupox = resultados["total"]
-                            if cantidad >= cantidad_grupo:
-                                cantidad = cantidad_grupox
+                            #cantidad_grupox = resultados["total"]
+                            #if cantidad >= cantidad_grupo:
+                            #    cantidad = cantidad_grupox
                             #print("Le estamos pidiendo", str(cantidad), "al grupo", str(grupo))
                             result_2 = post_orders_grupox(grupo, cantidad, sku)
                             #print("Le estamos pidiendo", str(cantidad), "al grupo", str(grupo), "STA_COD: " , result_2.status_code)
@@ -398,7 +399,6 @@ def enviar_fabricar():
                         break
 
                 if se_puede_pedir:
-                    print("entro",sku_stock_dict[element])
                     for sku in productos_[element]["receta"]:
                         despachar_producto(str(sku), productos_[element]["receta"][sku])
                     fabricarSinPago(element,lote)
@@ -412,7 +412,17 @@ def enviar_fabricar():
         pass
 
 
-
+def vaciar_almacen_despacho(todos_productos):
+    for prod in todos_productos:
+        productos_prod_en_almacen = obtener_productos_almacen(almacen_id_dict["despacho"], prod)
+        for elemento in productos_prod_en_almacen:
+            productoId = elemento["_id"]
+            message = "DELETE"+productoId+"direc"+"20"+"4af9f23d8ead0e1d32000900"
+            url = '{}stock'.format(api_url_base)
+            headers_ = {'Content-Type': 'application/json',
+                        'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
+            body = {"productoId": productoId, "oc": "4af9f23d8ead0e1d32000900", "direccion": "direc", "precio": 20}
+            result = requests.delete(url, headers=headers_, data=json.dumps(body))
 #print(cantidad_producto("1006"))
 
 #print(stock())
