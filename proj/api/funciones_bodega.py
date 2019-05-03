@@ -316,11 +316,13 @@ def generar_dict_compras():
     calcular_stock_unidades_ = calcular_stock_unidades(stock_actual, datos_productos)
     #print("\t2.2")
     dict_compra_final = calcular_cantidad_comprar(datos_productos, calcular_stock_unidades_)
-    #print("\t2.3")
+
     for materias_primas in stock_actual:
         sku = materias_primas['sku']
         if sku in dict_compra_final:
-            if dict_compra_final[sku] > materias_primas['total']:
+            if dict_compra_final[sku] < materias_primas['total']:
+                del dict_compra_final[sku]
+            else:
                 dict_compra_final[sku] -= materias_primas['total']
 
     return dict_compra_final
@@ -328,7 +330,7 @@ def generar_dict_compras():
 ########
 
 
-def pedir_productos_sku(sku, cantidad):
+def pedir_productos_sku(sku, cantidad, url_changed = False):
     datos = productos()
     productores = datos[sku]["productores"]
     total_pedido = 0
@@ -336,17 +338,12 @@ def pedir_productos_sku(sku, cantidad):
         for grupo in productores:
             try:
                 result = get_inventories_grupox(grupo)
-                #print("GRUPO", str(grupo), "esta con STA_CODE:", result.status_code)
-                if result.status_code == 200:
-                    for resultados in result.json():
-                        if resultados['sku'] == sku:
-                            #print("ok")
-                            #cantidad_grupox = resultados["total"]
-                            #if cantidad >= cantidad_grupo:
-                            #    cantidad = cantidad_grupox
-                            #print("Le estamos pidiendo", str(cantidad), "al grupo", str(grupo))
-                            result_2 = post_orders_grupox(grupo, cantidad, sku)
-                            #print("Le estamos pidiendo", str(cantidad), "al grupo", str(grupo), "STA_COD: " , result_2.status_code)
+                if result.status_code == 200 or result.status_code == 201:
+                    if not url_changed:
+                        result_2 = post_orders_grupox(grupo, cantidad, sku)
+                    else:
+                        result_2 = post_orders_grupox(grupo, cantidad, sku, url_changed=True)
+                        #print("Le estamos pidiendo", str(cantidad), "al grupo", str(grupo), "STA_COD: " , result_2.status_code)
                 else:
                     pass
             except:
@@ -355,15 +352,24 @@ def pedir_productos_sku(sku, cantidad):
         cantidad = datos[sku]['lote'] * math.ceil(cantidad/datos[sku]['lote'])
         #print(fabricarSinPago(sku, cantidad))
 
-def get_inventories_grupox(grupo):
-    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/inventories/'
-    headers_ = {'Content-Type': 'application/json'}
+
+def get_inventories_grupox(grupo, url_changed=False):
+    if not url_changed:
+        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/inventories'
+    else:
+        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/inventories/'
+
+    headers_ = {'Content-Type': 'application/json', 'group': '2'}
     result = requests.get(url, headers=headers_)
     return result
 
-def post_orders_grupox(grupo, cantidad, sku):
-    url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/'
-    headers_ = {'Content-Type': 'application/json'}
+def post_orders_grupox(grupo, cantidad, sku, url_change=False):
+    if not url_changed:
+        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders'
+    else:
+        url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders/'
+
+    headers_ = {'Content-Type': 'application/json', 'group': '2'}
     body = {'sku': sku, 'cantidad': cantidad, 'almacenId': almacen_id_dict['recepcion']}
     result = requests.post(url, headers=headers_, data=json.dumps(body))
     return result
@@ -373,7 +379,7 @@ def enviar_fabricar():
     stock2 = stock()
     for element in sku_stock_dict: # recorro elementos con stock minimo
         quantity = devolver_cantidad(stock2, element) # calculo cantidad del elemento en inventario
-        print(element,quantity)
+        #print(element,quantity)
         if sku_stock_dict[element] > quantity: # si tengo menos productos que el stock minimo
 
             resta = sku_stock_dict[element] - quantity #calculo cuanto es lo que me falta
@@ -423,6 +429,7 @@ def vaciar_almacen_despacho(todos_productos):
                         'Authorization': 'INTEGRACION grupo2:{}'.format(sign_request(message))}
             body = {"productoId": productoId, "oc": "4af9f23d8ead0e1d32000900", "direccion": "direc", "precio": 20}
             result = requests.delete(url, headers=headers_, data=json.dumps(body))
+            print(result)
 #print(cantidad_producto("1006"))
 
 #print(stock())
@@ -433,28 +440,38 @@ def vaciar_almacen_despacho(todos_productos):
 #enviar_fabricar()
 #print(cantidad_producto("1106"))
 #print(cantidad_producto("1006"))
+
 """
 def pedir_stock_minimo_grupos():
-    print("2")
+    datos = productos()
     pedir = generar_dict_compras()
-    print(pedir)
     liberar_recepcion()
     for sku, cantidad in pedir.items():
-        pedir_productos_sku(sku, cantidad)
+        print(datos[sku]['nombre'], sku)
+        pedir_productos_sku(sku, 3)
         liberar_recepcion()
-pedir_stock_minimo_grupos()
-
-
-print("1")
-pedir_stock_minimo_grupos()
-print("3")
-print(stock())
-enviar_fabricar()
-print(stock())
+        enviar_fabricar()
+        print(" ")
 """
-#print("NUESTRO GRUPO", get_inventories_grupox(2).json())
-#liberar_recepciºon()
-#print(stock())
-#pedir_productos_sku('1007', 1)
-#stock()
-#get_inventories_grupox(2).json())
+"""
+pedir_stock_minimo_grupos()
+
+enviar_fabricar()
+liberar_recepcion()
+
+#####PALTA
+for i in range(34):
+    pedir_productos_sku('1010', 1)
+liberar_recepcion()
+for i in range(50):
+    pedir_productos_sku('1012', 1)
+
+
+
+i = 0
+while i < 15:
+    mover_entre_almacenes("1003",86,almacen_id_dict["almacen_1"],almacen_id_dict["despacho"])
+    vaciar_almacen_despacho(['1003'])
+    i += 1
+
+"""
