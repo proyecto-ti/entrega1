@@ -97,6 +97,61 @@ def update_dictionary_stocks(dictionary, stock_type):
             dictionary[sku["_id"]] += sku["total"]
     return dictionary
 
+def stock_fixed():
+    stock_recepcion = ObtenerSkuconStock(almacen_id_dict['recepcion'])
+    print("Stock recepcion")
+    print(type(stock_recepcion))
+    print(stock_recepcion)
+    stock_almacen_1 = ObtenerSkuconStock(almacen_id_dict['almacen_1'])
+    print("Stock almacen 1")
+    print(type(stock_almacen_1))
+    print(stock_almacen_1)
+    stock_almacen_2 = ObtenerSkuconStock(almacen_id_dict['almacen_2'])
+    print("Stock almacen 2")
+    print(type(stock_almacen_2))
+    print(stock_almacen_2)
+    stock_pulmon = ObtenerSkuconStock(almacen_id_dict['pulmon'])
+    print("Stock pulmon")
+    print(type(stock_pulmon))
+    print(stock_pulmon)
+    #print("Recepcion", stock_recepcion)
+    #print("Almacen 1", stock_almacen_1)
+    #print("Almacen 2", stock_almacen_2)
+    #print("Pulmon", stock_pulmon)
+
+    #[{'_id': '1012', 'total': 1}, {'_id': '1310', 'total': 48},
+    dict_response = dict()
+    for item in stock_recepcion:
+        if item["_id"] in dict_response.keys():
+            dict_response[item["_id"]] += item["total"]
+        else:
+            dict_response[item["_id"]] = item["total"]
+    for item in stock_almacen_1:
+        if item["_id"] in dict_response.keys():
+            dict_response[item["_id"]] += item["total"]
+        else:
+            dict_response[item["_id"]] = item["total"]
+    for item in stock_almacen_2:
+        if item["_id"] in dict_response.keys():
+            dict_response[item["_id"]] += item["total"]
+        else:
+            dict_response[item["_id"]] = item["total"]
+    for item in stock_pulmon:
+        if item["_id"] in dict_response.keys():
+            dict_response[item["_id"]] += item["total"]
+        else:
+            dict_response[item["_id"]] = item["total"]
+
+    datos = productos()
+    list_skus = dict_response.keys()
+    list_response = list()
+    for sku in list_skus:
+        if sku in sku_producidos:
+            list_response.append({"sku": sku, "nombre": datos[sku]["nombre"], "total": dict_response[sku]})
+    print(list_response)
+    return list_response
+
+
 def stock(view = False):
     stock_recepcion = ObtenerSkuconStock(almacen_id_dict['recepcion'])
     stock_almacen_1 = ObtenerSkuconStock(almacen_id_dict['almacen_1'])
@@ -122,6 +177,7 @@ def stock(view = False):
             lista.append({"sku": str(sku), "nombre": str(datos[sku]["nombre"]), "total": total})
 
     return lista
+
 #####################################
 
 def obtener_productos_almacen(almacenId, sku):

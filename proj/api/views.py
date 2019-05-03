@@ -5,7 +5,9 @@ from hashlib import sha1
 import hmac
 from .funciones_bodega import *
 from .datos import *
+import json
 from django.shortcuts import render, render_to_response
+from django.http.response import JsonResponse
 
 name_sku_dict = {"Sesamo": "1011",
                 "Nori_Entero": "1016",
@@ -66,9 +68,8 @@ class InventoriesView(APIView):
     def get(self, request):
         #ESTA ES LA FUNCIÓN QUE HAY QUE MODIFICAR PARA LOS GET
         #SOLO SE MUESTRAN PRODUCTOS DE ALMACEN DESPACHO, ALMACENES GENERALES Y PULMON
-
-        lista = stock(view = True)
-        return Response(json.dumps(lista, sort_keys=True, ensure_ascii=False))
+        lista = stock_fixed()
+        return JsonResponse(lista, status=200, safe=False)
 
 # Cuando hagan post con POSTMAN hay que ponerle un / al final de la URL, así:
 # http://127.0.0.1:8000/api/orders/
@@ -87,4 +88,4 @@ class OrdersView(APIView):
             despachar_producto(sku, cantidad)
             mover_entre_bodegas(sku, cantidad, almacenId)
             dictionary = {"sku": sku, "cantidad": cantidad, "almacenId": almacenId, "grupoProveedor": "2", "aceptado": True, "despachado": True}
-            return Response(json.dumps(dictionary))
+            return JsonResponse(dictionary, status=200, safe=False)
