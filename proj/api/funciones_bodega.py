@@ -363,7 +363,7 @@ def get_inventories_grupox(grupo, url_changed=False):
     result = requests.get(url, headers=headers_)
     return result
 
-def post_orders_grupox(grupo, cantidad, sku, url_change=False):
+def post_orders_grupox(grupo, cantidad, sku, url_changed=False):
     if not url_changed:
         url = 'http://tuerca' + str(grupo) + '.ing.puc.cl/orders'
     else:
